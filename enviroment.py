@@ -2,7 +2,6 @@ from survivor import Survivor
 import pandas as pd
 import numpy as np
 from scipy.ndimage import label
-import matplotlib.pyplot as plt
 
 class Enviroment:
 
@@ -24,14 +23,14 @@ class Enviroment:
             survivor.setLifeStrengthAfterDisaster(self.disaster_center, self.disaster_dimensions)
     
 
-    def create_map(self):
+    def create_map(self, noise = 0.325, seed = 1):
 
         # Parâmetros do mapa
         linhas, colunas = self.disaster_dimensions
-        prob_obstaculo = 0.325
+        prob_obstaculo = noise
 
         # Definir a seed para reprodução dos resultados
-        np.random.seed(1)
+        np.random.seed(seed)
 
         # Gerar o mapa inicial com obstáculos
         mapa = np.random.choice([0.0, 1.0], size=(linhas, colunas), p=[1 - prob_obstaculo, prob_obstaculo])
@@ -48,13 +47,6 @@ class Enviroment:
 
         # Visualizar o mapa final
         self.map = mapa
-        plt.imshow(mapa, cmap="Greys", origin="upper")
-        plt.colorbar(label="0 = Livre, 1 = Obstáculo")
-        plt.title("Mapa com Obstáculos e Áreas Conectadas")
-        plt.xlabel("Colunas")
-        plt.ylabel("Linhas")
-        plt.show()
-
 # Função para garantir conectividade usando label para detectar regiões conectadas
 def garantir_conectividade(mapa):
     # Label das regiões conectadas

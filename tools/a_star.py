@@ -3,7 +3,6 @@ import heapq
 def a_star(mapa, inicio: tuple, destino: tuple):
     linhas, colunas = len(mapa), len(mapa[0])
     
-    # Inicialização de listas e dicionários
     aberta = []
     heapq.heappush(aberta, (0, inicio))  # (f(n), nó)
     g_score = {inicio: 0}  # Custo acumulado para cada nó
@@ -21,15 +20,14 @@ def a_star(mapa, inicio: tuple, destino: tuple):
             while atual:
                 caminho.append(atual)
                 atual = pais[atual]
-            return caminho[::-1]  # Retorna o caminho invertido
+            return caminho[::-1]  # Caminho invertido
         
-        # Verificar vizinhos
         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Movimentos possíveis
             vizinho = (atual[0] + dx, atual[1] + dy)
             
             # Verificar se o vizinho é válido
             if 0 <= vizinho[0] < linhas and 0 <= vizinho[1] < colunas and mapa[vizinho[0]][vizinho[1]] != 1:
-                novo_g_score = g_score[atual] + 1  # Assume-se custo de 1 entre células
+                novo_g_score = g_score[atual] + 1
                 
                 if vizinho not in g_score or novo_g_score < g_score[vizinho]:
                     g_score[vizinho] = novo_g_score
@@ -39,7 +37,7 @@ def a_star(mapa, inicio: tuple, destino: tuple):
 
     return None  # Retorna None se não houver caminho
 
-# Exemplo de uso:
+# Exemplo:
 if __name__ == '__main__':
     mapa = [
         [0.5, 1, 0, 0, 0],
