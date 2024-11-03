@@ -1,6 +1,5 @@
 from survivor import Survivor
 from enviroment import Enviroment
-import matplotlib.pyplot as plt
 
 ST = 5 # Tempo gasto pelo robo para salvar uma pessoa
 ROBOT_SPEED = 20 # Velocidade do robo
@@ -21,16 +20,10 @@ survivors_position = [
     (45, 70),
     (10, 35),
 ]
-survivors = [Survivor(i + 1, position, INITIAL_LIFE) for i, position in enumerate(survivors_position)]
+survivors = [Survivor(i, position, INITIAL_LIFE, LIFE_THRESHOLD) for i, position in enumerate(survivors_position)]
 
-enviroment = Enviroment(survivors, DISASTER_CENTER, DISASTER_DIMENSIONS)
+enviroment = Enviroment(survivors, DISASTER_CENTER, DISASTER_DIMENSIONS, ROBOT_SPEED, ST)
 
 enviroment.create_map()
 enviroment.applyDisaster()
 
-plt.imshow(enviroment.map, cmap="Greys", origin="upper")
-plt.colorbar(label="0 = Livre, 1 = Obstáculo")
-plt.title("Mapa com Obstáculos e Áreas Conectadas")
-plt.xlabel("Colunas")
-plt.ylabel("Linhas")
-plt.show()
