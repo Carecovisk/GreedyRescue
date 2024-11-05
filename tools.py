@@ -1,4 +1,6 @@
 import heapq
+import numpy as np
+from scipy.ndimage import label
 
 def a_star(mapa, inicio: tuple, destino: tuple):
     linhas, colunas = len(mapa), len(mapa[0])
@@ -37,17 +39,26 @@ def a_star(mapa, inicio: tuple, destino: tuple):
 
     return None  # Retorna None se não houver caminho
 
-# Exemplo:
-if __name__ == '__main__':
-    mapa = [
-        [0.5, 1, 0, 0, 0],
-        [0, 1, 0, 1, 0],
-        [0, 0, 0, 1, 0],
-        [0, 1, 0, 1, 0],
-        [0, 0, 0, 0, 0.5]
-    ]
-    inicio = (0, 0)
-    destino = (4, 4)
+# Função para garantir conectividade usando label para detectar regiões conectadas
+def garantir_conectividade(mapa):
+    # Label das regiões conectadas
+    labeled_map, num_features = label(mapa == 0)  # Regiões de células '0'
+    
+    # Se houver mais de uma região, manter apenas a maior e ajustar as demais
+    if num_features > 1:
+        # Encontrar a região conectada maior
+        sizes = np.bincount(labeled_map.ravel())
+        max_region = sizes[1:].argmax() + 1  # Ignora o rótulo '0' e encontra o maior rótulo
+        
+        # Ajusta o mapa para que somente a maior região seja 0
+        mapa[labeled_map != max_region] = 1  # Define as outras regiões como obstáculos
+    
+    return mapa
 
-    caminho = a_star(mapa, inicio, destino)
-    print("Caminho:", caminho)
+
+def obter_sequencias_continuas_de_tamanho(lista, tamanho):
+    sequencias = []
+    for i in range(len(lista) - tamanho + 1):  # Garantir que há espaço suficiente para uma sequência de 'tamanho'
+        sequencia = lista[i:i + tamanho]
+        sequencias.append(sequencia)
+    return sequencias

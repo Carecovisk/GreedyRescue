@@ -1,8 +1,7 @@
 from survivor import Survivor
-from tools.a_star import a_star
+from tools import a_star, garantir_conectividade, obter_sequencias_continuas_de_tamanho
 import pandas as pd, random
 import numpy as np
-from scipy.ndimage import label
 
 class Enviroment:
 
@@ -13,6 +12,7 @@ class Enviroment:
         self.disaster_dimensions = disaster_dimensions
         self.robot_speed = robot_speed
         self.st = st
+        self.rescued_on_current_path = 0
     
     def surviorsRescued(self):
         sum = 0
@@ -65,7 +65,7 @@ class Enviroment:
             # print(rp)
         return result
     
-    def evaluate_path(self, path = None):
+    def evaluate_path(self, path: list[int] = None):
         path = path or self.rescue_path
 
         for i in path:
@@ -78,7 +78,8 @@ class Enviroment:
                 self.survivors[j].setCurrentLife(self.robot_speed, distance, self.st)
 
             last_id = id
-        return self.surviorsRescued()
+        self.rescued_on_current_path = self.surviorsRescued()
+        return self.rescued_on_current_path
     
     def destroy_and_recreate(self, n_of_points: float = 0.5):
         size = len(self.rescue_path)
@@ -101,19 +102,45 @@ class Enviroment:
         return result
                 
 
-
-# Função para garantir conectividade usando label para detectar regiões conectadas
-def garantir_conectividade(mapa):
-    # Label das regiões conectadas
-    labeled_map, num_features = label(mapa == 0)  # Regiões de células '0'
-    
-    # Se houver mais de uma região, manter apenas a maior e ajustar as demais
-    if num_features > 1:
-        # Encontrar a região conectada maior
-        sizes = np.bincount(labeled_map.ravel())
-        max_region = sizes[1:].argmax() + 1  # Ignora o rótulo '0' e encontra o maior rótulo
+    def local_search(self, n_2opt_swap: float = 0.75):
+        def swap_operator(path: list[int]):
+            x = random.choice(path)
+            survivor_x_position = self.survivors[x].position
+            closest_to_x = min(path, key=lambda s: self.survivors[s].distanceFrom(survivor_x_position))
+            i, j = path.index(x), path.index(closest_to_x)
+            path[i], path[j] = path[j], path[i]
         
-        # Ajusta o mapa para que somente a maior região seja 0
-        mapa[labeled_map != max_region] = 1  # Define as outras regiões como obstáculos
-    
-    return mapa
+        def complementary_swap(path: list[int]):
+            path_copy = path.copy()
+            path_copy.sort(key=lambda x: self.survivors[x].life_strength)
+
+            for i in range(len(path) // 2):
+                with_less_life = path_copy[i]
+                with_more_life = path_copy[- (i + 1)]
+                k, l  = path.index(with_less_life), path.index(with_more_life)
+                path[k], path[l] = path[l], path[k]
+                
+                before = self.rescued_on_current_path
+                self.evaluate_path(path)
+                if self.rescued_on_current_path > before:
+                    break
+        
+        def swap_2_opt(path: list[int]):
+            
+            self.evaluate_path(path)
+
+            size = int(len(path) * n_2opt_swap)
+            for i in range(len(path) - size + 1):
+                failed = 0
+                for j in range(i, i + size):
+                    if not self.survivors[path[j]].isAlive:
+                        failed += 1
+                if failed > 2:
+                    for j in range(i, (i + size) // 2):
+                        path[j], path[(2 * i + size - 1) - j] = path[(2 * i + size - 1) - j], path[j]
+                    break
+                        
+        
+        print(self.rescue_path)
+        swap_2_opt(self.rescue_path)
+        print(self.rescue_path)
