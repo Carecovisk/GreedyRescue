@@ -1,7 +1,6 @@
 from survivor import Survivor
-from tools import a_star, garantir_conectividade, obter_sequencias_continuas_de_tamanho
-import pandas as pd, random
-import numpy as np
+from tools import a_star, garantir_conectividade
+import random, numpy as np
 
 class Enviroment:
 
@@ -102,13 +101,15 @@ class Enviroment:
         return result
                 
 
-    def local_search(self, n_2opt_swap: float = 0.75):
+    def local_search(self, sequence_2opt_swap: float = 0.75, iterations: int = 10):
+        # Operators
         def swap_operator(path: list[int]):
             x = random.choice(path)
             survivor_x_position = self.survivors[x].position
             closest_to_x = min(path, key=lambda s: self.survivors[s].distanceFrom(survivor_x_position))
             i, j = path.index(x), path.index(closest_to_x)
             path[i], path[j] = path[j], path[i]
+            self.evaluate_path(path)
         
         def complementary_swap(path: list[int]):
             path_copy = path.copy()
@@ -126,10 +127,7 @@ class Enviroment:
                     break
         
         def swap_2_opt(path: list[int]):
-            
-            self.evaluate_path(path)
-
-            size = int(len(path) * n_2opt_swap)
+            size = int(len(path) * sequence_2opt_swap)
             for i in range(len(path) - size + 1):
                 failed = 0
                 for j in range(i, i + size):
@@ -139,8 +137,20 @@ class Enviroment:
                     for j in range(i, (i + size) // 2):
                         path[j], path[(2 * i + size - 1) - j] = path[(2 * i + size - 1) - j], path[j]
                     break
-                        
+            self.evaluate_path(path)
+
+            
+
+        weights = [1/3 for i in range(3)]
+        choices = [swap_operator, complementary_swap, swap_2_opt]
         
-        print(self.rescue_path)
-        swap_2_opt(self.rescue_path)
-        print(self.rescue_path)
+        for i in range(iterations):
+            operator = random.choices(population=choices, weights=weights, k=1)[0]
+
+            rescued_before = self.rescued_on_current_path
+            operator(self.rescue_path)
+            if self.rescued_on_current_path > rescued_before:
+                index = choices.index(operator)
+                weights[index] += 0.05
+        
+        return self.rescued_on_current_path

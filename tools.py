@@ -1,6 +1,9 @@
 import heapq
+import random
 import numpy as np
 from scipy.ndimage import label
+
+from survivor import Survivor
 
 def a_star(mapa, inicio: tuple, destino: tuple):
     linhas, colunas = len(mapa), len(mapa[0])
