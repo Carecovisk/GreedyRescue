@@ -9,7 +9,6 @@ matplotlib = "*"
 pyqt6 = "*"
 scipy = "*"
 pandas = "*"
-pathfinding = "*"
 
 [dev-packages]
 

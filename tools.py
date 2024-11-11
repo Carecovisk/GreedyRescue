@@ -1,9 +1,6 @@
 import heapq
-import random
 import numpy as np, pandas as pd
 from scipy.ndimage import label
-
-from survivor import Survivor
 
 def a_star(mapa, inicio: tuple, destino: tuple):
     linhas, colunas = len(mapa), len(mapa[0])
@@ -40,28 +37,21 @@ def a_star(mapa, inicio: tuple, destino: tuple):
                     heapq.heappush(aberta, (f_score, vizinho))
                     pais[vizinho] = atual
 
-    return None  # Retorna None se não houver caminho
+    raise Exception(f"Algum dos sobreviventes não pode ser acessado! Inicio: {inicio}, Destino: {destino}")
 
-# Função para garantir conectividade usando label para detectar regiões conectadas
+# Garante que não aja areas inaceciveis no mapa
 def garantir_conectividade(mapa):
-    # Label das regiões conectadas
-    labeled_map, num_features = label(mapa == 0)  # Regiões de células '0'
-    
-    # Se houver mais de uma região, manter apenas a maior e ajustar as demais
+    labeled_map, num_features = label(mapa == 0)
     if num_features > 1:
-        # Encontrar a região conectada maior
         sizes = np.bincount(labeled_map.ravel())
-        max_region = sizes[1:].argmax() + 1  # Ignora o rótulo '0' e encontra o maior rótulo
-        
-        # Ajusta o mapa para que somente a maior região seja 0
-        mapa[labeled_map != max_region] = 1  # Define as outras regiões como obstáculos
-    
+        max_region = sizes[1:].argmax() + 1
+        mapa[labeled_map != max_region] = 1
     return mapa
 
 
 def obter_sequencias_continuas_de_tamanho(lista, tamanho):
     sequencias = []
-    for i in range(len(lista) - tamanho + 1):  # Garantir que há espaço suficiente para uma sequência de 'tamanho'
+    for i in range(len(lista) - tamanho + 1):
         sequencia = lista[i:i + tamanho]
         sequencias.append(sequencia)
     return sequencias
