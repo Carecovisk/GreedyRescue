@@ -13,11 +13,11 @@ class Enviroment:
         self.st = st
         self.rescued_on_current_path = 0
     
-    def surviorsRescued(self):
+    def surviorsRescued(self, path: list[int]):
+
         sum = 0
-        for s in self.survivors:
-            if s.isAlive:
-                sum += 1
+        for s in path:
+            sum += 1 if self.survivors[s].isAlive else 0
         return sum
     
     def applyDisaster(self):
@@ -64,7 +64,8 @@ class Enviroment:
             # print(rp)
         return result
     
-    def evaluate_path(self, path: list[int] = None):
+    def evaluate_path(self, path: list[int] = None, return_path = False):
+        total_travel = []
         path = path or self.rescue_path
 
         for i in path:
@@ -72,12 +73,17 @@ class Enviroment:
 
         last_id = path[0]
         for i, id in enumerate(path[1:]): # O caminho é uma sequencia de IDs representando os sobreviventes
-            distance = a_star(self.map, self.survivors[last_id].position, self.survivors[id].position).__len__() - 1
-            for j in path[i+1:]:
+            travel = a_star(self.map, self.survivors[last_id].position, self.survivors[id].position)
+            distance = len(travel) - 1
+            total_travel += travel
+            for j in path[i + 1:]:
                 self.survivors[j].setCurrentLife(self.robot_speed, distance, self.st)
 
             last_id = id
-        self.rescued_on_current_path = self.surviorsRescued()
+        self.rescued_on_current_path = self.surviorsRescued(path)
+
+        if return_path:
+            return self.rescued_on_current_path, total_travel
         return self.rescued_on_current_path
     
     def destroy_and_recreate(self, n_of_points: float = 0.5):

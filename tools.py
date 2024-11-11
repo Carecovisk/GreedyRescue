@@ -1,6 +1,6 @@
 import heapq
 import random
-import numpy as np
+import numpy as np, pandas as pd
 from scipy.ndimage import label
 
 from survivor import Survivor
@@ -65,3 +65,10 @@ def obter_sequencias_continuas_de_tamanho(lista, tamanho):
         sequencia = lista[i:i + tamanho]
         sequencias.append(sequencia)
     return sequencias
+
+def read_positions(filepath: str, N = 100, head = 20):
+    df = pd.read_csv(filepath, delim_whitespace=True, skiprows=9, header=None).iloc[:, 1:3]
+    df.columns = ["X", "Y"]
+    df = df[(df.X < N) & (df.Y < N)].head(head)
+
+    return [row[1:] for row in df.itertuples()]
